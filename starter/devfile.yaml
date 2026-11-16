@@ -1,0 +1,27 @@
+schemaVersion: 2.2.0
+metadata:
+  name: workathon-starter
+components:
+  - name: ansible-tools
+    container:
+      image: quay.io/ansible/creator-ee:latest
+      memoryLimit: 2Gi
+      mountSources: true
+      endpoints:
+        - exposure: none
+          name: unused
+          targetPort: 8888
+commands:
+  - id: ansible-lint
+    exec:
+      component: ansible-tools
+      commandLine: "ansible-lint playbooks || true"
+      workingDir: ${PROJECT_SOURCE}
+  - id: syntax-check
+    exec:
+      component: ansible-tools
+      commandLine: "ansible-playbook --syntax-check playbooks/site_linux_web.yml"
+      workingDir: ${PROJECT_SOURCE}
+events:
+  postStart:
+    - ansible-lint

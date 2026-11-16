@@ -1,0 +1,34 @@
+---
+- name: Baseline Linux
+  hosts: os_linux
+  gather_facts: true
+  tasks:
+    - name: Ensure web package present
+      ansible.builtin.package:
+        name: "{{ web_package }}"
+        state: present
+
+    - name: Ensure firewall http port open (firewalld if present)
+      ansible.posix.firewalld:
+        port: "{{ http_port }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      when: ansible_facts.services['firewalld.service'] is defined
+      failed_when: false
+
+- name: Baseline Windows
+  hosts: os_windows
+  gather_facts: false
+  tasks:
+    - name: Ensure IIS features
+      ansible.windows.win_feature:
+        name:
+          - Web-Server
+          - Web-Common-Http
+        state: present
+      register: iis_feat
+
+    - name: Reboot if required
+      ansible.windows.win_reboot:
+      when: iis_feat.reboot_required | default(false)

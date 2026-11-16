@@ -1,0 +1,41 @@
+---
+- name: Deploy Linux web with Jinja templates
+  hosts: os_linux:&role_web
+  gather_facts: true
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+
+    - name: Reload httpd
+      ansible.builtin.service:
+        name: httpd
+        state: reloaded
+
+  tasks:
+    - name: Select conf template by package
+      ansible.builtin.set_fact:
+        web_conf_src: "{{ 'nginx.conf.j2' if web_package == 'nginx' else 'httpd.conf.j2' }}"
+        web_reload_handler: "{{ 'Reload nginx' if web_package == 'nginx' else 'Reload httpd' }}"
+
+    # TODO: completar — renderizar vhost desde templates/
+    - name: Deploy web server config from Jinja
+      ansible.builtin.template:
+        src: "{{ web_conf_src }}"
+        dest: "{{ web_conf_dest }}"
+        mode: "0644"
+      notify: "{{ web_reload_handler }}"
+
+    # TODO: completar — página de bienvenida con welcome_message
+    - name: Deploy index.html from Jinja
+      ansible.builtin.template:
+        src: index.html.j2
+        dest: "{{ web_root }}/index.html"
+        mode: "0644"
+
+    - name: Ensure web service started
+      ansible.builtin.service:
+        name: "{{ web_service }}"
+        state: started
+        enabled: true

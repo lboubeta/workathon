@@ -1,0 +1,38 @@
+---
+- name: Smoke test Linux web
+  hosts: os_linux:&role_web
+  gather_facts: false
+  tasks:
+    - name: HTTP check
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host | default(inventory_hostname) }}:{{ http_port }}/"
+        return_content: true
+        status_code: 200
+      register: web
+      retries: 5
+      delay: 3
+      until: web.status == 200
+
+    - name: Assert welcome message present
+      ansible.builtin.assert:
+        that:
+          - welcome_message in web.content
+        fail_msg: "welcome_message not found in response"
+
+- name: Smoke test Windows IIS
+  hosts: os_windows
+  gather_facts: false
+  tasks:
+    - name: Skip if deploy_windows is false
+      ansible.builtin.meta: end_host
+      when: not (deploy_windows | bool)
+
+    - name: HTTP check via win_uri
+      ansible.windows.win_uri:
+        url: "http://localhost:{{ http_port }}/"
+        return_content: true
+        status_code: 200
+      register: win_web
+      retries: 5
+      delay: 3
+      until: win_web.status_code | default(win_web.status) | int == 200

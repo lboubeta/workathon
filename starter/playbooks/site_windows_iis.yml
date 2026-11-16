@@ -1,0 +1,40 @@
+---
+- name: Deploy Windows IIS companion site
+  hosts: os_windows
+  gather_facts: false
+  tasks:
+    - name: Ensure IIS Web-Server feature
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present
+      register: iis
+
+    - name: Reboot if feature requires it
+      ansible.windows.win_reboot:
+      when: iis.reboot_required | default(false)
+
+    - name: Ensure site directory
+      ansible.windows.win_file:
+        path: "{{ iis_physical_path }}"
+        state: directory
+
+    # TODO: completar — usar win_template con index.html.j2
+    - name: Deploy welcome page to IIS path
+      ansible.windows.win_template:
+        src: index.html.j2
+        dest: "{{ iis_physical_path }}\\index.html"
+
+    - name: Ensure default web site path (simple lab path)
+      ansible.windows.win_shell: |
+        Import-Module WebAdministration
+        if (-not (Test-Path "IIS:\Sites\{{ iis_site_name }}")) {
+          New-Website -Name "{{ iis_site_name }}" -Port {{ http_port }} -PhysicalPath "{{ iis_physical_path }}"
+        } else {
+          Set-ItemProperty "IIS:\Sites\{{ iis_site_name }}" -Name physicalPath -Value "{{ iis_physical_path }}"
+        }
+
+    - name: Ensure W3SVC started
+      ansible.windows.win_service:
+        name: W3SVC
+        state: started
+        start_mode: auto

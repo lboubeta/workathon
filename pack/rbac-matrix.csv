@@ -1,0 +1,7 @@
+team,username,password_temp,org_role,team_role,notes
+t1,t1-lead,CHANGE_ME,Organization Execute,Team Admin,Piloto plataforma
+t1,t1-operator,CHANGE_ME,Organization Execute,JobTemplate Execute; Inventory Use; Credential Use,Ejecuta jobs
+t1,t1-viewer,CHANGE_ME,Organization Read,Read,Solo lectura
+t2,t2-lead,CHANGE_ME,Organization Execute,Team Admin,Piloto plataforma
+t2,t2-operator,CHANGE_ME,Organization Execute,JobTemplate Execute; Inventory Use; Credential Use,Ejecuta jobs
+t2,t2-viewer,CHANGE_ME,Organization Read,Read,Solo lectura

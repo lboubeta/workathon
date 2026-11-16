@@ -1,0 +1,18 @@
+---
+# Definición CaC de ejemplo (Opción B del challenge).
+# Aplicar con collection ansible.controller (o gateway) desde un JT apply-cac.
+#
+# Sustituir tN / org / inventory / project por los del equipo.
+
+controller_job_templates:
+  - name: tN-deploy-linux-web
+    organization: tN-org
+    project: tN-starter
+    playbook: playbooks/site_linux_web.yml
+    inventory: tN-aws
+    execution_environment: Default execution environment
+    ask_variables_on_launch: true
+    extra_vars:
+      welcome_message: "Mensaje por defecto desde AAC"
+      http_port: 80
+    state: present

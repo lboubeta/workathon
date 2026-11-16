@@ -1,0 +1,9 @@
+*.retry
+.vault_pass
+*.pyc
+__pycache__/
+.idea/
+.vscode/
+*.log
+inventory/hosts.ini
+!inventory/.gitkeep

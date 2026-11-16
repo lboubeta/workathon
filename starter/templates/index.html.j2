@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ server_name }} — Workathon</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 3rem; background: #0f1419; color: #e7ecf1; }
+    main { max-width: 40rem; }
+    .meta { color: #8b9aab; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>{{ welcome_message }}</h1>
+    <p class="meta">Host: {{ server_name }} · env={{ env }} · port={{ http_port }}</p>
+    <p class="meta">Rendered by Ansible Jinja · team workathon</p>
+  </main>
+</body>
+</html>

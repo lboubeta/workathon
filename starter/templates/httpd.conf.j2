@@ -1,0 +1,13 @@
+Listen {{ http_port }}
+
+<VirtualHost *:{{ http_port }}>
+    ServerName {{ server_name }}
+    DocumentRoot {{ web_root }}
+
+    <Directory "{{ web_root }}">
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    # Workathon: env={{ env }}
+</VirtualHost>

@@ -1,0 +1,31 @@
+---
+# JT tN-apply-cac — usado por EDA tras un push.
+# Opción A (default): redeploy web leyendo vars del repo.
+# Opción B: descomentar el bloque controller para aplicar AAC.
+
+- name: CaC apply — redeploy web from Git vars
+  ansible.builtin.import_playbook: site_linux_web.yml
+
+# --- Opción B (requiere collection ansible.controller + credenciales) ---
+# - name: Apply Controller Job Template from AAC YAML
+#   hosts: localhost
+#   gather_facts: false
+#   collections:
+#     - ansible.controller
+#   tasks:
+#     - name: Load AAC definition
+#       ansible.builtin.include_vars:
+#         file: "{{ playbook_dir }}/../aac/job_templates.yml"
+#
+#     - name: Ensure job templates
+#       ansible.controller.job_template:
+#         name: "{{ item.name }}"
+#         organization: "{{ item.organization }}"
+#         project: "{{ item.project }}"
+#         playbook: "{{ item.playbook }}"
+#         inventory: "{{ item.inventory }}"
+#         ask_variables_on_launch: "{{ item.ask_variables_on_launch | default(false) }}"
+#         extra_vars: "{{ item.extra_vars | default({}) }}"
+#         state: "{{ item.state | default('present') }}"
+#       loop: "{{ controller_job_templates }}"
+#       no_log: true
