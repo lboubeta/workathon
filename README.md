@@ -1,4 +1,4 @@
-# Workathon AAP — Bankinter (4 horas)
+# Workathon AAP (3 horas)
 
 Workathon práctico para perfiles técnicos (sistemas Linux/Windows, comunicaciones, middleware, infraestructura y cloud) que empiezan a automatizar con **Ansible Automation Platform**.
 
