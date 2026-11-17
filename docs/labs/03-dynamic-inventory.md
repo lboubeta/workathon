@@ -17,6 +17,9 @@ Crear un Inventory + source **AWS EC2** con la credencial `tN-aws` del Lab 2. Lo
    - **Source variables** (usar este esqueleto; ajustar `Team`):
 
 ```yaml
+regions:
+  - eu-west-1
+
 # Filtrar solo las VMs del equipo (obligatorio)
 filters:
   tag:Team: "N"
@@ -29,14 +32,15 @@ hostnames:
   - tag:Name
 
 # Grupos = valor del label (sin prefijo os_/role_)
+# | string evita error si Team/Env llegan como int
 keyed_groups:
   - key: tags.OS
     separator: ""
   - key: tags.Role
     separator: ""
-  - key: tags.Env
+  - key: tags.Env | string
     prefix: env
-  - key: tags.Team
+  - key: tags.Team | string
     prefix: team
 ```
 

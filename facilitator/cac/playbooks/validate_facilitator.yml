@@ -1,0 +1,121 @@
+---
+# Valida que el diseño (hostnames Name + grupos OS/Role) es viable en org facilitator.
+
+- name: Validate facilitator inventory design
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - awx.awx
+  vars_files:
+    - "{{ playbook_dir }}/../vars/facilitator.yml"
+
+  tasks:
+    - name: Lookup inventory
+      awx.awx.inventory_list:
+        query:
+          name: "{{ inventory_name }}"
+      register: inv_list
+
+    - name: Assert inventory exists
+      ansible.builtin.assert:
+        that:
+          - inv_list.results | length > 0
+        fail_msg: "Inventory {{ inventory_name }} not found — run apply_facilitator.yml first"
+
+    - name: Set inventory id
+      ansible.builtin.set_fact:
+        inv_id: "{{ inv_list.results[0].id }}"
+
+    - name: List hosts
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/controller/v2/inventories/{{ inv_id }}/hosts/?page_size=200"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauthtoken }}"
+          Accept: application/json
+        validate_certs: "{{ validate_certs }}"
+      register: hosts_api
+      when: controller_oauthtoken | default('') | length > 0
+
+    - name: List groups
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/controller/v2/inventories/{{ inv_id }}/groups/?page_size=200"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauthtoken }}"
+          Accept: application/json
+        validate_certs: "{{ validate_certs }}"
+      register: groups_api
+      when: controller_oauthtoken | default('') | length > 0
+
+    - name: Collect names
+      ansible.builtin.set_fact:
+        found_hosts: "{{ hosts_api.json.results | map(attribute='name') | list }}"
+        found_groups: "{{ groups_api.json.results | map(attribute='name') | list }}"
+
+    - name: Check expected hosts (Name tags)
+      ansible.builtin.assert:
+        that:
+          - item in found_hosts
+        fail_msg: "Missing host {{ item }}; found={{ found_hosts }}"
+        success_msg: "OK host {{ item }}"
+      loop: "{{ expected_hosts }}"
+
+    - name: Check expected groups (OS/Role labels)
+      ansible.builtin.assert:
+        that:
+          - item in found_groups
+        fail_msg: "Missing group {{ item }}; found={{ found_groups }}"
+        success_msg: "OK group {{ item }}"
+      loop: "{{ expected_groups }}"
+
+    - name: Resolve group ids
+      ansible.builtin.set_fact:
+        group_ids: "{{ dict(groups_api.json.results | map(attribute='name') | zip(groups_api.json.results | map(attribute='id'))) }}"
+
+    - name: Fetch membership for key groups
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/controller/v2/groups/{{ group_ids[item] }}/hosts/?page_size=200"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauthtoken }}"
+          Accept: application/json
+        validate_certs: "{{ validate_certs }}"
+      loop: "{{ expected_groups }}"
+      register: membership
+
+    - name: Build host→groups map
+      ansible.builtin.set_fact:
+        host_groups: >-
+          {{
+            host_groups | default({}) | combine({
+              item.1: (host_groups | default({})).get(item.1, []) + [item.0.item]
+            }, recursive=False)
+          }}
+      loop: "{{ membership.results | subelements('json.results') }}"
+      loop_control:
+        label: "{{ item.0.item }} ← {{ item.1.name }}"
+
+    - name: Assert t1-linux ∈ linux ∩ web
+      ansible.builtin.assert:
+        that:
+          - "'linux' in host_groups['t1-linux']"
+          - "'web' in host_groups['t1-linux']"
+        fail_msg: "t1-linux groups={{ host_groups.get('t1-linux', []) }}"
+
+    - name: Assert t1-windows ∈ windows ∩ db
+      ansible.builtin.assert:
+        that:
+          - "'windows' in host_groups['t1-windows']"
+          - "'db' in host_groups['t1-windows']"
+        fail_msg: "t1-windows groups={{ host_groups.get('t1-windows', []) }}"
+
+    - name: Design viable
+      ansible.builtin.debug:
+        msg: |
+          ✓ Hostnames = Name (tN-linux / tN-windows)
+          ✓ Groups linux/windows/web/db from labels
+          ✓ Membership web↔linux, db↔windows
+          found_hosts={{ found_hosts | sort }}
+          found_groups={{ found_groups | sort }}

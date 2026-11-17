@@ -230,7 +230,7 @@ bankinter/workathon/
 │   ├── ansible.cfg
 │   └── devfile.yaml
 ├── terraform/                ← 2 VMs/equipo: linux + windows (eu-west-1)
-└── facilitator/              ← checklist y scoring labs 2–3
+└── facilitator/              ← checklist, scoring labs 2–3, CaC org `facilitator`
 ```
 
 Infra de lab: ver [`terraform/README.md`](terraform/README.md) (`terraform apply` → Name/OS/Role para inventario dinámico).

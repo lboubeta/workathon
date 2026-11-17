@@ -1,0 +1,94 @@
+---
+# CaC — org de validación del diseño workathon
+# Secretos: pasar por -e / env / vars/secrets.yml (no commitear)
+
+controller_host: "{{ lookup('env', 'CONTROLLER_HOST') | default('https://bankinter-aap.apps.hetzner.calopezb.com', true) }}"
+controller_oauthtoken: "{{ lookup('env', 'CONTROLLER_TOKEN') | default(omit, true) }}"
+controller_username: "{{ lookup('env', 'CONTROLLER_USERNAME') | default(omit, true) }}"
+controller_password: "{{ lookup('env', 'CONTROLLER_PASSWORD') | default(omit, true) }}"
+validate_certs: false
+
+org_name: facilitator
+team_name: facilitator-team
+
+# Prefijo de objetos (espejo de tN-* del lab)
+prefix: facilitator
+
+credential_names:
+  scm: "{{ prefix }}-scm"
+  machine_linux: "{{ prefix }}-machine-linux"
+  machine_windows: "{{ prefix }}-machine-windows"
+  aws: "{{ prefix }}-aws"
+
+project_name: "{{ prefix }}-starter"
+inventory_name: "{{ prefix }}-aws"
+inventory_source_name: "{{ prefix }}-ec2"
+
+# Archive SCM (starter + scoring). Regenerar URL con scripts/refresh_archive_url.py
+project_scm_type: archive
+project_scm_url: "{{ lookup('env', 'FACILITATOR_STARTER_URL') | default('', true) }}"
+project_scm_update_on_launch: true
+
+aws_region: eu-west-1
+# Inventario: todas las VMs seed del workathon (tags Terraform)
+inventory_source_vars: |
+  regions:
+    - eu-west-1
+  filters:
+    tag:Project: "bankinter-workathon"
+  compose:
+    ansible_host: public_ip_address | default(private_ip_address)
+  hostnames:
+    - tag:Name
+  keyed_groups:
+    - key: tags.OS
+      separator: ""
+    - key: tags.Role
+      separator: ""
+    - key: tags.Env | string
+      prefix: env
+    - key: tags.Team | string
+      prefix: team
+
+
+# Credenciales machine (lab password Terraform)
+machine_username: ansible
+machine_password: "{{ lookup('env', 'INSTANCE_PASSWORD') | default('Ansible123!', true) }}"
+
+# AWS — desde env o secrets
+aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') | default('', true) }}"
+aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') | default('', true) }}"
+
+execution_environment: Default execution environment
+
+job_templates:
+  - name: "{{ prefix }}-baseline"
+    playbook: playbooks/baseline.yml
+    limit: ""
+    description: "Baseline OS (linux+windows)"
+  - name: "{{ prefix }}-deploy-linux-web"
+    playbook: playbooks/site_linux_web.yml
+    limit: "linux:&web"
+    description: "Deploy web on linux/web"
+  - name: "{{ prefix }}-deploy-windows-iis"
+    playbook: playbooks/site_windows_iis.yml
+    limit: "windows:&db"
+    description: "Windows companion (IIS) on windows/db"
+  - name: "{{ prefix }}-smoke"
+    playbook: playbooks/smoke.yml
+    limit: ""
+    description: "HTTP smoke test"
+
+# Hosts esperados tras sync (validación)
+expected_hosts:
+  - t1-linux
+  - t1-windows
+  - t2-linux
+  - t2-windows
+  - t3-linux
+  - t3-windows
+expected_groups:
+  - linux
+  - windows
+  - web
+  - db

@@ -23,6 +23,7 @@
 - [ ] Cuota / límite comunicado a equipos
 - [ ] Tras el evento: `terraform destroy`
 - [ ] Scoring labs 2–3 listo: `facilitator/scoring/score_teams.py` + token Controller
+- [ ] Org sandbox `facilitator` desplegada vía CaC (`facilitator/cac/`) y `validate_facilitator.yml` OK
 
 ## Windows
 

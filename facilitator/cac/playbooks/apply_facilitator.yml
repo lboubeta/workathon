@@ -1,0 +1,208 @@
+---
+# Despliega la org facilitator completa (espejo del diseño workathon).
+#
+# export CONTROLLER_HOST=https://bankinter-aap.apps.hetzner.calopezb.com
+# export CONTROLLER_TOKEN=...
+# export AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=...
+# export FACILITATOR_STARTER_URL=$(python3 ../scripts/refresh_archive_url.py)
+# ansible-playbook playbooks/apply_facilitator.yml
+
+- name: Apply facilitator CaC to AAP Controller
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - awx.awx
+  vars_files:
+    - "{{ playbook_dir }}/../vars/facilitator.yml"
+  module_defaults:
+    group/awx.awx.controller:
+      controller_host: "{{ controller_host }}"
+      controller_oauthtoken: "{{ controller_oauthtoken | default(omit) }}"
+      controller_username: "{{ controller_username | default(omit) }}"
+      controller_password: "{{ controller_password | default(omit) }}"
+      validate_certs: "{{ validate_certs }}"
+
+  pre_tasks:
+    - name: Require Controller auth
+      ansible.builtin.assert:
+        that:
+          - controller_host | length > 0
+          - (controller_oauthtoken | default('') | length > 0) or
+            ((controller_username | default('') | length > 0) and (controller_password | default('') | length > 0))
+        fail_msg: Set CONTROLLER_HOST + CONTROLLER_TOKEN (or USERNAME/PASSWORD)
+
+    - name: Require project SCM URL
+      ansible.builtin.assert:
+        that:
+          - project_scm_url | length > 0
+        fail_msg: >-
+          Set FACILITATOR_STARTER_URL (run scripts/refresh_archive_url.py after uploading the archive)
+
+    - name: Require AWS keys for inventory credential
+      ansible.builtin.assert:
+        that:
+          - aws_access_key | length > 0
+          - aws_secret_key | length > 0
+        fail_msg: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+
+  tasks:
+    - name: Organization facilitator
+      awx.awx.organization:
+        name: "{{ org_name }}"
+        description: "Workathon design validation sandbox"
+        state: present
+      register: org
+
+    - name: Team facilitator-team
+      awx.awx.team:
+        name: "{{ team_name }}"
+        organization: "{{ org_name }}"
+        description: "Facilitator operators"
+        state: present
+
+    - name: Credential Machine Linux
+      awx.awx.credential:
+        name: "{{ credential_names.machine_linux }}"
+        description: "SSH ansible (lab)"
+        organization: "{{ org_name }}"
+        credential_type: Machine
+        inputs:
+          username: "{{ machine_username }}"
+          password: "{{ machine_password }}"
+        state: present
+
+    - name: Credential Machine Windows
+      awx.awx.credential:
+        name: "{{ credential_names.machine_windows }}"
+        description: "WinRM ansible (lab)"
+        organization: "{{ org_name }}"
+        credential_type: Machine
+        inputs:
+          username: "{{ machine_username }}"
+          password: "{{ machine_password }}"
+        state: present
+
+    - name: Credential AWS
+      awx.awx.credential:
+        name: "{{ credential_names.aws }}"
+        description: "EC2 inventory + cloud modules"
+        organization: "{{ org_name }}"
+        credential_type: Amazon Web Services
+        inputs:
+          username: "{{ aws_access_key }}"
+          password: "{{ aws_secret_key }}"
+        state: present
+
+    - name: Credential SCM placeholder (optional empty git)
+      awx.awx.credential:
+        name: "{{ credential_names.scm }}"
+        description: "SCM for archive/git (unused with public/presigned archive)"
+        organization: "{{ org_name }}"
+        credential_type: Source Control
+        inputs:
+          username: ""
+          password: ""
+        state: present
+      # Source Control may require username — skip soft-fail
+      failed_when: false
+
+    - name: Project facilitator-starter (archive SCM)
+      awx.awx.project:
+        name: "{{ project_name }}"
+        description: "Starter playbooks + scoring (archive)"
+        organization: "{{ org_name }}"
+        scm_type: "{{ project_scm_type }}"
+        scm_url: "{{ project_scm_url }}"
+        scm_update_on_launch: "{{ project_scm_update_on_launch }}"
+        scm_delete_on_update: true
+        state: present
+        wait: true
+        update_project: true
+        timeout: 300
+      register: project
+
+    - name: Inventory facilitator-aws
+      awx.awx.inventory:
+        name: "{{ inventory_name }}"
+        description: "Dynamic EC2 — Name hostnames, OS/Role groups"
+        organization: "{{ org_name }}"
+        state: present
+      register: inv
+
+    - name: Inventory source EC2
+      awx.awx.inventory_source:
+        name: "{{ inventory_source_name }}"
+        inventory: "{{ inventory_name }}"
+        organization: "{{ org_name }}"
+        source: ec2
+        credential: "{{ credential_names.aws }}"
+        source_vars: "{{ inventory_source_vars }}"
+        update_on_launch: true
+        overwrite: true
+        overwrite_vars: true
+        source_regions: "{{ aws_region }}"
+        state: present
+        wait: true
+        update_inventory: true
+        timeout: 300
+      register: inv_src
+
+    - name: Group vars for windows (WinRM)
+      awx.awx.group:
+        name: windows
+        inventory: "{{ inventory_name }}"
+        variables:
+          ansible_connection: winrm
+          ansible_winrm_transport: ntlm
+          ansible_port: 5985
+          ansible_winrm_server_cert_validation: ignore
+        state: present
+      # Group may already exist from keyed_groups after sync
+      failed_when: false
+
+    - name: Job templates
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ org_name }}"
+        project: "{{ project_name }}"
+        inventory: "{{ inventory_name }}"
+        playbook: "{{ item.playbook }}"
+        limit: "{{ item.limit }}"
+        execution_environment: "{{ execution_environment }}"
+        ask_limit_on_launch: true
+        ask_variables_on_launch: true
+        state: present
+      loop: "{{ job_templates }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Attach machine credentials to JT (linux)
+      awx.awx.job_template:
+        name: "{{ item }}"
+        organization: "{{ org_name }}"
+        credentials:
+          - "{{ credential_names.machine_linux }}"
+        state: present
+      loop:
+        - "{{ prefix }}-baseline"
+        - "{{ prefix }}-deploy-linux-web"
+        - "{{ prefix }}-smoke"
+
+    - name: Attach machine credentials to Windows JT
+      awx.awx.job_template:
+        name: "{{ prefix }}-deploy-windows-iis"
+        organization: "{{ org_name }}"
+        credentials:
+          - "{{ credential_names.machine_windows }}"
+        state: present
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg: |
+          Org={{ org_name }}
+          Project={{ project_name }} status sync done
+          Inventory={{ inventory_name }} source={{ inventory_source_name }}
+          JTs={{ job_templates | map(attribute='name') | list }}
+          Next: ansible-playbook playbooks/validate_facilitator.yml

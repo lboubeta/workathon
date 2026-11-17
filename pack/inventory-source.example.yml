@@ -1,6 +1,9 @@
 # Pegar en Inventory Source → Source variables (Amazon EC2)
 # Sustituir N por el número de equipo (1, 2, 3).
 
+regions:
+  - eu-west-1
+
 filters:
   tag:Team: "N"
 
@@ -15,7 +18,8 @@ keyed_groups:
     separator: ""
   - key: tags.Role
     separator: ""
-  - key: tags.Env
+  - key: tags.Env | string
     prefix: env
-  - key: tags.Team
+  - key: tags.Team | string
     prefix: team
+
