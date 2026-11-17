@@ -6,9 +6,9 @@
 
 ## Datos del pack
 
-- `pack/scm.md` — URL Gitea, branch, token/clave
-- `pack/cloud.md` — AWS access/secret o rol
-- `pack/hosts.md` — usuario SSH, usuario WinRM, puertos
+- `starter/pack/scm.md` — URL Gitea, branch, token/clave
+- `starter/pack/cloud.md` — AWS access/secret o rol
+- `starter/pack/hosts.md` — usuario SSH, usuario WinRM, puertos
 - Prefijo obligatorio: `tN-` (ej. equipo 1 → `t1-…`)
 
 ## Credenciales a crear (obligatorio)
@@ -33,7 +33,7 @@ En la credencial Machine para Windows:
 
 1. Crear Project **`tN-starter`** (nombre exacto)
 2. SCM Type: Git
-3. URL: la del pack (`pack/scm.md`)
+3. URL: la del pack (`starter/pack/scm.md`)
 4. Branch: `main` (o la indicada)
 5. Credential: `tN-scm-gitea`
 6. Options: **Update Revision on Launch** (recomendado)

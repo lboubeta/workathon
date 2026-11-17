@@ -19,7 +19,7 @@
 | Transport | `ntlm` |
 | Server | `http` o `https` según lab |
 
-VMs provisionadas con [`../terraform`](../terraform): **2 por equipo** — `tN-linux` (`OS=linux`, `Role=web`) y `tN-windows` (`OS=windows`, `Role=db`).
+VMs provisionadas con [`../../terraform`](../../terraform): **2 por equipo** — `tN-linux` (`OS=linux`, `Role=web`) y `tN-windows` (`OS=windows`, `Role=db`).
 
 ### Variables de inventario sugeridas (Windows)
 

@@ -3,7 +3,7 @@
 ## Identidad / RBAC
 
 - [ ] Orgs `tN-org` creadas (o plantilla)
-- [ ] Users del `pack/rbac-matrix.csv` creados con passwords temporales
+- [ ] Users del `starter/pack/rbac-matrix.csv` creados con passwords temporales
 - [ ] Documentada matriz de roles (los equipos asignan en Lab 1)
 - [ ] Usuario facilitador System/Org Admin
 
@@ -40,7 +40,7 @@
 ## EDA
 
 - [ ] Decision Environment publicado
-- [ ] Event Stream creado; URL + secret en `pack/eda.md`
+- [ ] Event Stream creado; URL + secret en `starter/pack/eda.md`
 - [ ] Rulebook stub importado (`starter/eda/rulebook-cac.yml`)
 - [ ] Credencial AAP token para `run_job_template`
 - [ ] Activation de prueba recibe un webhook sintético

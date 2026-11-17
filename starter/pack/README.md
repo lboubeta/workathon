@@ -1,6 +1,8 @@
 # Pack de datos
 
-Rellenar **antes** del workathon y entregar una copia por equipo (o un zip `tN-pack`).
+Vive dentro del [`starter/`](../) (mismo repo Gitea / DevSpaces). Rellenar **antes** del workathon.
+
+Plan general: [`../../README.md`](../../README.md). Índice del starter: [`../README.md`](../README.md).
 
 | Fichero | Qué completar |
 |---------|----------------|

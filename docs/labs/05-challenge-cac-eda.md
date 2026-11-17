@@ -36,7 +36,7 @@ DevSpaces ──commit──► Gitea ──webhook──► EDA Event Stream
 ## Webhook Gitea
 
 1. En el repo Gitea → Settings → Webhooks → Add Webhook.
-2. URL: Event Stream del pack (`pack/eda.md`).
+2. URL: Event Stream del pack (`starter/pack/eda.md`).
 3. Secret: el facilitador os lo da.
 4. Event: **Push**.
 5. Probar con un commit vacío si hace falta.

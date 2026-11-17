@@ -52,7 +52,7 @@ Cada lab deja artefactos que reutiliza el siguiente.
 
 ### Lab 1 — RBAC y organización (30 min)
 
-Con el pack facilitado (`pack/rbac-matrix.csv`), modelar en Controller:
+Con el pack facilitado (`starter/pack/rbac-matrix.csv`), modelar en Controller:
 
 - Organization + Team del equipo
 - Users y membership
@@ -89,7 +89,7 @@ Inventory `tN-aws` + source **AWS EC2** con `tN-aws`. Requisitos:
 - **Hostname** = tag `Name` de la instancia (`tN-linux`, `tN-windows`)
 - **Grupos** desde labels (sin prefijo): `linux`, `windows`, `web`, `db` (Linux→web, Windows→db)
 
-**Entregable:** sync OK + ad-hoc `ping` / `win_ping` selectivos — nunca `all` a ciegas. Ejemplo source vars: [`pack/inventory-source.example.yml`](pack/inventory-source.example.yml).
+**Entregable:** sync OK + ad-hoc `ping` / `win_ping` selectivos — nunca `all` a ciegas. Ejemplo source vars: [`starter/pack/inventory-source.example.yml`](starter/pack/inventory-source.example.yml).
 
 Guía: [`docs/labs/03-dynamic-inventory.md`](docs/labs/03-dynamic-inventory.md)
 
@@ -150,9 +150,16 @@ No hay un lab “solo Windows”: todos los equipos lo tocan en el camino feliz.
 
 ---
 
-## Pack de datos a facilitar
+## Starter + pack (mismo repo Gitea)
 
-Ver carpeta [`pack/`](pack/) — rellenar antes del evento:
+Todo lo que el equipo clona vive en [`starter/`](starter/):
+
+| Path | Rol |
+|------|-----|
+| [`starter/`](starter/) | Playbooks, templates Jinja, group_vars, EDA, AAC, Devfile |
+| [`starter/pack/`](starter/pack/) | Datos del lab a rellenar (RBAC, SCM, AWS, hosts, EDA URLs) |
+
+Rellenar el pack **antes** del evento:
 
 | Pack | Contenido |
 |------|-----------|
@@ -160,8 +167,7 @@ Ver carpeta [`pack/`](pack/) — rellenar antes del evento:
 | SCM | URL repo Gitea, token, branch lab |
 | Cloud | Access key / rol, región, tags `Team=N` |
 | Hosts seed | 2 VMs/equipo: Linux web + Windows db |
-| Jinja starter | Ya en `starter/templates/` |
-| EDA starter | Rulebook stub + instrucciones webhook |
+| Jinja / EDA | Ya en `starter/templates/` y `starter/eda/` |
 
 ---
 
@@ -220,8 +226,8 @@ python3 facilitator/scoring/score_teams.py
 bankinter/workathon/
 ├── README.md                 ← este plan
 ├── docs/labs/                ← guías paso a paso por lab
-├── pack/                     ← datos a rellenar por equipo
 ├── starter/                  ← repo plantilla (Gitea / DevSpaces)
+│   ├── pack/                 ← datos a rellenar por equipo
 │   ├── playbooks/
 │   ├── templates/
 │   ├── group_vars/
@@ -239,7 +245,7 @@ Infra de lab: ver [`terraform/README.md`](terraform/README.md) (`terraform apply
 
 ## Próximos pasos (facilitación)
 
-1. Rellenar `pack/` con datos reales del lab.
-2. Publicar `starter/` en Gitea y crear forks `t1`…`tN`.
+1. Rellenar [`starter/pack/`](starter/pack/) con datos reales del lab.
+2. Publicar [`starter/`](starter/) (incluye pack) en Gitea y crear forks `t1`…`tN`.
 3. Ejecutar [`facilitator/checklist.md`](facilitator/checklist.md) el día anterior.
 4. Imprimir o compartir las guías de `docs/labs/` con cada equipo.

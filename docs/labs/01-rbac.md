@@ -6,8 +6,8 @@ Modelar en AAP Controller la organización del equipo usando el pack facilitado.
 
 ## Datos del pack
 
-- `pack/rbac-matrix.csv` — usuarios, teams y roles
-- `pack/team-sheet.md` — nombre de Org/Team y prefijo `tN-`
+- `starter/pack/rbac-matrix.csv` — usuarios, teams y roles
+- `starter/pack/team-sheet.md` — nombre de Org/Team y prefijo `tN-`
 
 ## Pasos
 
