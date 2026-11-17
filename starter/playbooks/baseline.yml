@@ -1,6 +1,6 @@
 ---
 - name: Baseline Linux
-  hosts: os_linux
+  hosts: linux:&web
   gather_facts: true
   tasks:
     - name: Ensure web package present
@@ -18,7 +18,7 @@
       failed_when: false
 
 - name: Baseline Windows
-  hosts: os_windows
+  hosts: windows
   gather_facts: false
   tasks:
     - name: Ensure IIS features

@@ -1,6 +1,6 @@
 ---
 - name: Deploy Windows IIS companion site
-  hosts: os_windows
+  hosts: windows
   gather_facts: false
   tasks:
     - name: Ensure IIS Web-Server feature

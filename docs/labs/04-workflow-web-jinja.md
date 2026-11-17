@@ -22,8 +22,8 @@ Prefijo `tN-`:
 
 1. `tN-sync-inventory` — Update inventory (o mark source update)
 2. `tN-baseline` — playbook `baseline.yml` · cred Linux/Windows según limit
-3. `tN-deploy-linux-web` — `site_linux_web.yml` · limit `os_linux:&role_web` · cred SSH
-4. `tN-deploy-windows-iis` — `site_windows_iis.yml` · limit `os_windows` · cred WinRM
+3. `tN-deploy-linux-web` — `site_linux_web.yml` · limit `linux` o `web` · cred SSH
+4. `tN-deploy-windows-iis` — `site_windows_iis.yml` · limit `windows` o `db` · cred WinRM
 5. `tN-smoke` — `smoke.yml`
 
 Prompt on launch / survey en el **Workflow** (no hace falta survey en cada JT si pasáis `workflow_job_extra_vars`).

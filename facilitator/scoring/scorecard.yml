@@ -1,0 +1,76 @@
+# Rúbrica puntuable (labs 2–3) — usada por score_teams.yml / score_teams.py
+# Total labs 2+3 = 30 pts (alineado con README workathon)
+
+lab2_credentials_project:
+  max_points: 15
+  checks:
+    - id: cred_scm
+      points: 3
+      description: "Credencial Source Control tN-scm-gitea"
+    - id: cred_linux
+      points: 3
+      description: "Credencial Machine tN-machine-linux"
+    - id: cred_windows
+      points: 3
+      description: "Credencial Machine tN-machine-windows"
+    - id: cred_aws
+      points: 3
+      description: "Credencial AWS tN-aws"
+    - id: project_sync
+      points: 3
+      description: "Project tN-starter con último sync successful"
+
+lab3_dynamic_inventory:
+  max_points: 15
+  checks:
+    - id: inventory_exists
+      points: 2
+      description: "Inventory tN-aws existe"
+    - id: hostnames_name
+      points: 4
+      description: "Hosts nombrados como tag Name (tN-linux + tN-windows)"
+    - id: group_linux
+      points: 1
+      description: "Grupo dinámico linux"
+    - id: group_windows
+      points: 1
+      description: "Grupo dinámico windows"
+    - id: group_web
+      points: 1
+      description: "Grupo dinámico web"
+    - id: group_db
+      points: 1
+      description: "Grupo dinámico db"
+    - id: membership_web_linux
+      points: 2
+      description: "tN-linux ∈ grupos linux y web"
+    - id: membership_db_windows
+      points: 3
+      description: "tN-windows ∈ grupos windows y db"
+
+# Nombres de host esperados por equipo (tag Name / hostname inventario)
+# 2 VMs: Linux=web, Windows=db
+expected_host_patterns:
+  - "t{N}-linux"
+  - "t{N}-windows"
+
+expected_groups:
+  - linux
+  - windows
+  - web
+  - db
+
+expected_membership:
+  - host: "t{N}-linux"
+    groups: [linux, web]
+  - host: "t{N}-windows"
+    groups: [windows, db]
+
+expected_credentials:
+  - "t{N}-scm-gitea"
+  - "t{N}-machine-linux"
+  - "t{N}-machine-windows"
+  - "t{N}-aws"
+
+expected_project: "t{N}-starter"
+expected_inventory: "t{N}-aws"

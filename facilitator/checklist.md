@@ -17,9 +17,12 @@
 ## AWS
 
 - [ ] IAM mínimo para inventory + ec2 describe/tags
-- [ ] 1–2 Linux + 1 Windows por equipo, tagged (`Team`, `OS`, `Role`, `Env`)
-- [ ] Security Groups: SSH/WinRM desde nodos de ejecución AAP
+- [ ] `terraform apply` en `terraform/` → 2 VMs/equipo: `tN-linux` + `tN-windows` (`Team`, `OS`, `Role=web|db`, `Env`)
+- [ ] Password lab `Ansible123!` operativa (SSH + WinRM); Windows user-data terminado
+- [ ] Security Groups: SSH/WinRM/HTTP/RDP (lab) o restringir `allowed_cidr`
 - [ ] Cuota / límite comunicado a equipos
+- [ ] Tras el evento: `terraform destroy`
+- [ ] Scoring labs 2–3 listo: `facilitator/scoring/score_teams.py` + token Controller
 
 ## Windows
 

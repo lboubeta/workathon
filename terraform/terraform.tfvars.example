@@ -1,0 +1,7 @@
+aws_region     = "eu-west-1"
+teams          = ["1", "2", "3"]
+instance_password = "Ansible123!"
+allowed_cidr   = "0.0.0.0/0"
+# key_name     = "my-keypair"   # opcional
+# linux_instance_type   = "t3.small"
+# windows_instance_type = "t3.medium"

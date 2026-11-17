@@ -12,11 +12,13 @@
 
 | Tag | Ejemplo |
 |-----|---------|
-| `Name` | `t1-web-linux` |
+| `Name` | `t1-linux` / `t1-windows` (2 VMs/equipo) |
 | `Team` | `1` |
-| `OS` | `linux` o `windows` |
-| `Role` | `web` |
+| `OS` | `linux` o `windows` → grupos inventario `linux` / `windows` |
+| `Role` | `web` o `db` → grupos inventario `web` / `db` |
 | `Env` | `dev` o `prod` |
+
+Inventario: hostname = `Name`. Ejemplo source vars: [`inventory-source.example.yml`](inventory-source.example.yml).
 
 ## Límites
 

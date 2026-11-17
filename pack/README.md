@@ -8,6 +8,7 @@ Rellenar **antes** del workathon y entregar una copia por equipo (o un zip `tN-p
 | `team-sheet.md` | Org, URLs, prefijo |
 | `scm.md` | Gitea URL, token, branch, webhook secret |
 | `cloud.md` | AWS keys/rol, región, tags |
+| `inventory-source.example.yml` | Source vars EC2 (Name + grupos linux/windows/web/db) |
 | `hosts.md` | SSH/WinRM |
 | `eda.md` | Event Stream URL, DE, JT apply-cac |
 

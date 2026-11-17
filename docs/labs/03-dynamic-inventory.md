@@ -2,60 +2,85 @@
 
 ## Objetivo
 
-Conectar un inventory source AWS EC2, construir grupos dinámicos por tags (incl. OS Windows) y validar con `ping` / `win_ping` selectivos.
+Crear un Inventory + source **AWS EC2** con la credencial `tN-aws` del Lab 2. Los **nombres de host** deben ser el **Name** de la instancia EC2; los **grupos** se generan desde los labels/tags (`linux`, `windows`, `web`, `db`).
+
+**Seed por equipo (2 VMs):** Linux = `web`, Windows = `db`.
 
 ## Pasos
 
-1. Crear Inventory `tN-aws`
-2. Añadir **Inventory Source**:
+1. Crear Inventory **`tN-aws`** (nombre exacto) en `tN-org`.
+2. Añadir **Inventory Source** (nombre sugerido `tN-ec2`):
    - Source: Amazon EC2
    - Credential: `tN-aws`
-   - Regions: la del pack
+   - Regions: `eu-west-1` (pack)
    - Update on launch: sí
-   - Source variables (ejemplo):
+   - **Source variables** (usar este esqueleto; ajustar `Team`):
 
 ```yaml
+# Filtrar solo las VMs del equipo (obligatorio)
+filters:
+  tag:Team: "N"
+
 compose:
   ansible_host: public_ip_address | default(private_ip_address)
-keyed_groups:
-  - key: tags.Env
-    prefix: env
-  - key: tags.Role
-    prefix: role
-  - key: tags.OS
-    prefix: os
-  - key: tags.Team
-    prefix: team
-groups:
-  web_prod: "'web' in (role_web | default([])) and 'prod' in (env_prod | default([]))"
+
+# Nombre en inventario = tag Name de la instancia (ej. t1-linux)
 hostnames:
   - tag:Name
-  - private-ip-address
+
+# Grupos = valor del label (sin prefijo os_/role_)
+keyed_groups:
+  - key: tags.OS
+    separator: ""
+  - key: tags.Role
+    separator: ""
+  - key: tags.Env
+    prefix: env
+  - key: tags.Team
+    prefix: team
 ```
 
-3. Ajustar `groups` / filtros para limitar a `tags.Team == N` (evitar ver hosts de otros equipos).
-4. **Sync** del source.
-5. Revisar hosts y grupos generados: `env_*`, `role_*`, `os_linux`, `os_windows`, `team_N`.
-6. En hosts Windows, verificar variables (group_vars o host_vars):
+> Objetivo pedagógico: grupos **`linux`**, **`windows`**, **`web`**, **`db`** (valores de `OS` / `Role`), no `os_linux` / `role_web`.
+
+3. **Sync** del source.
+4. Verificar hosts:
+   - Exactamente **2 hosts**: `tN-linux`, `tN-windows` (coinciden con el tag `Name` en AWS)
+   - Grupos presentes: `linux`, `windows`, `web`, `db` (+ `team_N`, `env_dev`…)
+   - Membresía: `tN-linux` ∈ `linux` ∩ `web`; `tN-windows` ∈ `windows` ∩ `db`
+5. En el grupo `windows` (o inventory `group_vars` del Project), vars WinRM:
 
 ```yaml
 ansible_connection: winrm
 ansible_winrm_transport: ntlm
 ansible_port: 5985
+ansible_winrm_server_cert_validation: ignore
 ```
 
-7. Ad-hoc (o JT seed):
-   - Módulo `ping` → límite `os_linux:&team_N`
-   - Módulo `win_ping` → límite `os_windows:&team_N`
+El starter ya trae `group_vars/windows.yml` alineado con el grupo `windows`.
 
-## Criterio de éxito
+6. Ad-hoc (o JT seed) — **nunca** `all` a ciegas:
+   - `ping` → límite `linux` (o `web`)
+   - `win_ping` → límite `windows` (o `db`)
 
-- [ ] Sync inventory Successful
-- [ ] Existen grupos dinámicos por Env, Role, OS
-- [ ] Al menos un host Linux y uno Windows del equipo
-- [ ] `ping` OK solo en Linux del equipo
-- [ ] `win_ping` OK solo en Windows del equipo
+## Tags EC2 esperados (seed Terraform)
+
+| Tag | Valores | Grupo dinámico |
+|-----|---------|----------------|
+| `Name` | `tN-linux`, `tN-windows` | = hostname en inventario |
+| `OS` | `linux`, `windows` | grupos `linux` / `windows` |
+| `Role` | `web` (Linux), `db` (Windows) | grupos `web` / `db` |
+| `Team` | `1`\|`2`\|`3` | `team_N` + filtro source |
+| `Env` | `dev`\|`prod` | `env_*` |
+
+## Criterio de éxito (puntuable)
+
+- [ ] Inventory `tN-aws` + sync Successful
+- [ ] Hostnames = instance `Name` (`tN-linux`, `tN-windows` — no IP ni `i-…`)
+- [ ] Grupos `linux`, `windows`, `web`, `db` existen
+- [ ] Hosts en los grupos correctos (`web`↔linux, `db`↔windows)
+- [ ] `ping` OK en `linux` del equipo
+- [ ] `win_ping` OK en `windows` del equipo
 
 ## Notas
 
-Si el facilitador usa inventory estático seed además de AWS, documentad ambos; el objetivo pedagógico es el **source dinámico** y los **keyed_groups**.
+El objetivo pedagógico es el **source dinámico**, **hostnames desde Name** y **keyed_groups desde labels**. El scoring del facilitador comprueba nombres y grupos vía API.

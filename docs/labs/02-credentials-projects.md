@@ -2,49 +2,52 @@
 
 ## Objetivo
 
-Crear credenciales tipadas y un Project SCM apuntando al repo Gitea del equipo. Verificar sync en verde y prueba WinRM.
+**Vosotros** creáis en Controller todas las credenciales tipadas y el Project SCM del equipo (el facilitador no los deja hechos). Sync del Project en verde y prueba de conectividad.
 
 ## Datos del pack
 
 - `pack/scm.md` — URL Gitea, branch, token/clave
 - `pack/cloud.md` — AWS access/secret o rol
 - `pack/hosts.md` — usuario SSH, usuario WinRM, puertos
+- Prefijo obligatorio: `tN-` (ej. equipo 1 → `t1-…`)
 
-## Credenciales a crear
+## Credenciales a crear (obligatorio)
 
-| Nombre sugerido | Tipo | Campos |
-|-----------------|------|--------|
+| Nombre exacto | Tipo | Campos |
+|---------------|------|--------|
 | `tN-scm-gitea` | Source Control | Usuario/token Gitea |
-| `tN-machine-linux` | Machine | SSH user + key/password |
+| `tN-machine-linux` | Machine | SSH user + password/key (`ansible` / pack) |
 | `tN-machine-windows` | Machine | WinRM user/password; connection WinRM |
 | `tN-aws` | Amazon Web Services | Access key + secret (o assume role) |
 
-Asignar cada credencial al Team con rol **Use**.
+Asignar cada credencial al Team con rol **Use** (no hace falta Admin).
 
 ### WinRM (Machine)
 
 En la credencial Machine para Windows:
 
 - Username / Password del pack
-- En el Job Template (Lab 4) o en variables de inventario: `ansible_connection=winrm`, `ansible_winrm_transport=ntlm` (o el valor validado por el facilitador), `ansible_port=5985|5986`
+- En Lab 3–4 (vars de inventario / JT): `ansible_connection=winrm`, `ansible_winrm_transport=ntlm`, `ansible_port=5985|5986`
 
-## Project
+## Project (obligatorio)
 
-1. Crear Project `tN-starter`
+1. Crear Project **`tN-starter`** (nombre exacto)
 2. SCM Type: Git
-3. URL: la del pack
+3. URL: la del pack (`pack/scm.md`)
 4. Branch: `main` (o la indicada)
 5. Credential: `tN-scm-gitea`
-6. Options: Update Revision on Launch (recomendado)
-7. Guardar → **Sync**
+6. Options: **Update Revision on Launch** (recomendado)
+7. Organization: `tN-org`
+8. Guardar → **Sync**
 
-## Criterio de éxito
+## Criterio de éxito (puntuable)
 
-- [ ] Project sync **Successful**
-- [ ] Playbooks visibles bajo el Project (`playbooks/*.yml`)
-- [ ] Credenciales creadas y visibles solo para el Team
-- [ ] (Opcional) Job ad-hoc o JT seed de conectividad Linux OK
-- [ ] Prueba WinRM: ad-hoc `win_ping` o JT seed Windows OK
+- [ ] Las 4 credenciales existen con los nombres `tN-*` (**vosotros las creáis**; el facilitador no las pre-crea)
+- [ ] Project `tN-starter` sync **Successful**
+- [ ] Playbooks visibles (`playbooks/*.yml`)
+- [ ] Credenciales con **Use** para el Team (secrets no visibles en claro)
+
+> Recuento automático: `facilitator/scoring/score_teams.py` (labs 2–3, 30 pts).
 
 ## Troubleshooting rápido
 

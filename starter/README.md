@@ -8,7 +8,7 @@ Repo plantilla para el Workathon AAP (Bankinter). Se publica en Gitea y cada equ
 |------|-------------|
 | `playbooks/` | Baseline, web Linux (Jinja), IIS Windows, smoke, apply-cac |
 | `templates/` | `index.html.j2`, nginx/httpd, IIS web.config |
-| `group_vars/` | Defaults + vars WinRM para `os_windows` |
+| `group_vars/` | Defaults + vars WinRM para grupo `windows` |
 | `eda/rulebook-cac.yml` | Esqueleto webhook → JT |
 | `aac/job_templates.yml` | Ejemplo AAP as Code (challenge B) |
 | `devfile.yaml` | DevSpaces |

@@ -8,8 +8,8 @@ Workathon práctico para perfiles técnicos (sistemas Linux/Windows, comunicacio
 
 ## Principio de diseño
 
-1. **Plataforma primero.** La primera mitad se centra en configurar AAP (RBAC, credenciales, projects) con un **pack de datos facilitado**.
-2. **Automatizar después.** Inventarios dinámicos, workflows con surveys/Jinja y tareas Windows.
+1. **Plataforma primero.** La primera mitad se centra en configurar AAP (RBAC; **credenciales y projects los crean los equipos**) con un **pack de datos facilitado**.
+2. **Automatizar después.** Inventarios dinámicos (hostname = `Name`, grupos desde labels), workflows con surveys/Jinja y tareas Windows.
 3. **Challenge al final.** DevSpaces → push a Gitea → webhook → EDA → despliegue CaC.
 4. **Pre-bake obligatorio.** Lo lento (hosts seed, EE/DE base, rulebook stub, WinRM) lo prepara el facilitador; los equipos cablean y demuestran.
 
@@ -42,7 +42,9 @@ Cada lab deja artefactos que reutiliza el siguiente.
   - **Piloto dominio** — web / Windows / cloud
   - **Copiloto Git** — DevSpaces, commits, webhook
 - Prefijo de objetos en AAP: `tN-` (ej. `t1-inventory`, `t2-deploy-web`).
-- Tags AWS: `Team=N`, `OS=linux|windows`, `Role=web`, `Env=dev|prod`.
+- Tags AWS: `Team=N`, `OS=linux|windows`, `Role=web|db`, `Env=dev|prod`.
+- **2 VMs/equipo:** `tN-linux` (Role=web) y `tN-windows` (Role=db).
+- Inventario: hostname = tag `Name`; grupos = valores de labels (`linux`, `windows`, `web`, `db`).
 
 ---
 
@@ -62,17 +64,17 @@ Guía: [`docs/labs/01-rbac.md`](docs/labs/01-rbac.md)
 
 ### Lab 2 — Credenciales y Projects (35 min)
 
-Crear y asociar credenciales tipadas; enlazar Project SCM al repo Gitea del equipo.
+Los participantes **crean** (nombres exactos) y asocian:
 
-| Tipo | Uso |
-|------|-----|
-| Machine (SSH) | Hosts Linux seed |
-| Machine (WinRM) | Hosts Windows seed |
-| Amazon Web Services | Inventory source + módulos cloud |
-| Source Control | Sync del Project desde Gitea |
-| Vault (opcional) | Lookup de secretos |
+| Nombre | Tipo | Uso |
+|--------|------|-----|
+| `tN-machine-linux` | Machine (SSH) | Hosts Linux seed |
+| `tN-machine-windows` | Machine (WinRM) | Hosts Windows seed |
+| `tN-aws` | Amazon Web Services | Inventory source + módulos cloud |
+| `tN-scm-gitea` | Source Control | Sync del Project desde Gitea |
+| `tN-starter` | Project | Repo Gitea del equipo |
 
-**Entregable:** Project en verde; credenciales con rol **Use** para el Team (no Admin innecesario).
+**Entregable:** Project sync Successful; credenciales con rol **Use** para el Team. Puntuable vía [`facilitator/scoring/`](facilitator/scoring/).
 
 Guía: [`docs/labs/02-credentials-projects.md`](docs/labs/02-credentials-projects.md)
 
@@ -82,9 +84,12 @@ Guía: [`docs/labs/02-credentials-projects.md`](docs/labs/02-credentials-project
 
 ### Lab 3 — Inventarios dinámicos (+ Windows) (40 min)
 
-Inventory source **AWS EC2** con la credencial del Lab 2. Construir grupos dinámicos por tags/labels, incluyendo Windows en el mismo inventario (`os_windows` / `os_linux`).
+Inventory `tN-aws` + source **AWS EC2** con `tN-aws`. Requisitos:
 
-**Entregable:** grupos `env_*`, `role_*`, `os_*` y compuesto (ej. `web_prod`). Ad-hoc: `ping` (Linux) + `win_ping` (Windows) contra sus grupos — nunca `all` a ciegas.
+- **Hostname** = tag `Name` de la instancia (`tN-linux`, `tN-windows`)
+- **Grupos** desde labels (sin prefijo): `linux`, `windows`, `web`, `db` (Linux→web, Windows→db)
+
+**Entregable:** sync OK + ad-hoc `ping` / `win_ping` selectivos — nunca `all` a ciegas. Ejemplo source vars: [`pack/inventory-source.example.yml`](pack/inventory-source.example.yml).
 
 Guía: [`docs/labs/03-dynamic-inventory.md`](docs/labs/03-dynamic-inventory.md)
 
@@ -105,7 +110,7 @@ Caso de uso concreto: desplegar un servidor web parametrizado.
 
 **Jinja facilitado** en `starter/templates/` — los equipos completan tasks (`template`, `service`, handlers), no diseñan las plantillas desde cero.
 
-> **Tarea Windows obligatoria:** al menos un Job Template del workflow debe ejecutarse solo en `os_windows` (WinRM).
+> **Tarea Windows obligatoria:** al menos un Job Template del workflow debe ejecutarse solo en `windows` (WinRM).
 
 Guía: [`docs/labs/04-workflow-web-jinja.md`](docs/labs/04-workflow-web-jinja.md)
 
@@ -137,7 +142,7 @@ Guía: [`docs/labs/05-challenge-cac-eda.md`](docs/labs/05-challenge-cac-eda.md)
 | Dónde | Tarea |
 |-------|-------|
 | Lab 2 | Credencial Machine WinRM + prueba de conectividad |
-| Lab 3 | Host Windows en inventario dinámico; `win_ping` |
+| Lab 3 | Host en grupo `windows`; `win_ping` |
 | Lab 4 | Nodo workflow: IIS / `win_feature` / `win_copy` / `win_service` |
 | Challenge (opc.) | Path CaC que actualiza contenido en IIS |
 
@@ -154,7 +159,7 @@ Ver carpeta [`pack/`](pack/) — rellenar antes del evento:
 | Identidad | Users, passwords temporales, matriz RBAC |
 | SCM | URL repo Gitea, token, branch lab |
 | Cloud | Access key / rol, región, tags `Team=N` |
-| Hosts seed | 1–2 Linux + 1 Windows por equipo (o compartido) |
+| Hosts seed | 2 VMs/equipo: Linux web + Windows db |
 | Jinja starter | Ya en `starter/templates/` |
 | EDA starter | Rulebook stub + instrucciones webhook |
 
@@ -191,16 +196,21 @@ Checklist: [`facilitator/checklist.md`](facilitator/checklist.md)
 
 ---
 
-## Puntuación sugerida (opcional)
+## Puntuación
 
-| Hito | Pts |
-|------|-----|
-| RBAC demo (execute vs deny) | 15 |
-| Creds + Project sync OK | 15 |
-| Grupos dinámicos + `win_ping` | 15 |
-| Workflow web Jinja + nodo Windows | 30 |
-| Challenge: push Gitea → job vía EDA | 25 |
+| Hito | Pts | Automatizado |
+|------|-----|--------------|
+| RBAC demo (execute vs deny) | 15 | Manual / demo |
+| Creds + Project sync OK (Lab 2) | 15 | [`facilitator/scoring/`](facilitator/scoring/) |
+| Inventario Name + grupos + membresía web/db (Lab 3) | 15 | [`facilitator/scoring/`](facilitator/scoring/) |
+| Workflow web Jinja + nodo Windows | 30 | Manual / demo |
+| Challenge: push Gitea → job vía EDA | 25 | Manual / demo |
 | **Total** | **100** |
+
+```bash
+export CONTROLLER_HOST=https://<controller> CONTROLLER_TOKEN=...
+python3 facilitator/scoring/score_teams.py
+```
 
 ---
 
@@ -219,8 +229,11 @@ bankinter/workathon/
 │   ├── aac/
 │   ├── ansible.cfg
 │   └── devfile.yaml
-└── facilitator/              ← checklist y notas internas
+├── terraform/                ← 2 VMs/equipo: linux + windows (eu-west-1)
+└── facilitator/              ← checklist y scoring labs 2–3
 ```
+
+Infra de lab: ver [`terraform/README.md`](terraform/README.md) (`terraform apply` → Name/OS/Role para inventario dinámico).
 
 ---
 

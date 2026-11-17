@@ -1,0 +1,21 @@
+# Pegar en Inventory Source → Source variables (Amazon EC2)
+# Sustituir N por el número de equipo (1, 2, 3).
+
+filters:
+  tag:Team: "N"
+
+compose:
+  ansible_host: public_ip_address | default(private_ip_address)
+
+hostnames:
+  - tag:Name
+
+keyed_groups:
+  - key: tags.OS
+    separator: ""
+  - key: tags.Role
+    separator: ""
+  - key: tags.Env
+    prefix: env
+  - key: tags.Team
+    prefix: team

@@ -1,0 +1,60 @@
+---
+# Lanzar desde el portátil del facilitador o como JT en AAP (hosts: localhost).
+# Requiere acceso API a Controller (token OAuth recomendado).
+#
+# ansible-playbook facilitator/scoring/score_teams.yml \
+#   -e controller_host=https://controller.example.com \
+#   -e controller_token=XXXX \
+#   -e teams='[1,2,3]'
+
+- name: Score workathon labs 2 and 3
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    controller_host: "{{ lookup('env', 'CONTROLLER_HOST') }}"
+    controller_token: "{{ lookup('env', 'CONTROLLER_TOKEN') }}"
+    controller_validate_certs: true
+    teams: [1, 2, 3]
+    api: "{{ controller_host.rstrip('/') }}/api/v2"
+    auth_header: "Bearer {{ controller_token }}"
+
+  tasks:
+    - name: Require Controller API credentials
+      ansible.builtin.assert:
+        that:
+          - controller_host | length > 0
+          - controller_token | length > 0
+        fail_msg: "Set controller_host and controller_token (or CONTROLLER_* env vars)"
+
+    - name: Score each team via script
+      ansible.builtin.command:
+        cmd: >-
+          python3 {{ playbook_dir }}/score_teams.py --json
+      environment:
+        CONTROLLER_HOST: "{{ controller_host }}"
+        CONTROLLER_TOKEN: "{{ controller_token }}"
+        TEAMS: "{{ teams | join(',') }}"
+        VERIFY_SSL: "{{ '1' if controller_validate_certs else '0' }}"
+      register: score_raw
+      changed_when: false
+
+    - name: Parse scoreboard
+      ansible.builtin.set_fact:
+        scoreboard: "{{ score_raw.stdout | from_json }}"
+
+    - name: Show scoreboard
+      ansible.builtin.debug:
+        msg: |
+          {% for t in scoreboard.teams %}
+          t{{ t.team }}: {{ t.earned }}/{{ t.max_points }}
+          {% for c in t.checks %}
+            [{{ 'OK' if c.ok else 'FAIL' }}] +{{ c.points }} {{ c.description }}
+          {% endfor %}
+          {% endfor %}
+
+    - name: Write scoreboard JSON artifact
+      ansible.builtin.copy:
+        dest: "{{ playbook_dir }}/last_scores.json"
+        content: "{{ scoreboard | to_nice_json }}"
+      delegate_to: localhost

@@ -1,0 +1,28 @@
+<powershell>
+$ErrorActionPreference = "Stop"
+$PlainPassword = "${password}"
+$SecurePassword = ConvertTo-SecureString $PlainPassword -AsPlainText -Force
+
+# Administrator + ansible user (! and other special chars must be quoted)
+net user Administrator "$PlainPassword"
+net user ansible "$PlainPassword" /add
+net localgroup Administrators ansible /add
+
+# WinRM for Ansible (HTTP lab profile)
+Enable-PSRemoting -Force
+winrm quickconfig -q -force
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="1024"}'
+
+# Firewall
+netsh advfirewall firewall add rule name="WinRM-HTTP-5985" dir=in action=allow protocol=TCP localport=5985
+netsh advfirewall firewall add rule name="WinRM-HTTPS-5986" dir=in action=allow protocol=TCP localport=5986
+netsh advfirewall firewall add rule name="HTTP-80" dir=in action=allow protocol=TCP localport=80
+netsh advfirewall firewall add rule name="RDP-3389" dir=in action=allow protocol=TCP localport=3389
+
+# Autologon off; ensure W3SVC can be installed later by Ansible
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "LocalAccountTokenFilterPolicy" -Value 1 -Type DWord
+
+Write-Output "Workathon Windows bootstrap complete"
+</powershell>

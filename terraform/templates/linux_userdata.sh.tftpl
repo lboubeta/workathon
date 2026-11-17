@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euxo pipefail
+
+id -u ansible >/dev/null 2>&1 || useradd -m -s /bin/bash ansible
+echo 'ansible:${password}' | chpasswd
+echo 'ec2-user:${password}' | chpasswd
+echo 'ansible ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/ansible
+chmod 440 /etc/sudoers.d/ansible
+
+# Enable SSH password authentication (Amazon Linux 2023)
+sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+if [ -d /etc/ssh/sshd_config.d ]; then
+  printf 'PasswordAuthentication yes\nChallengeResponseAuthentication no\n' >/etc/ssh/sshd_config.d/60-workathon-pwauth.conf
+fi
+systemctl restart sshd
+
+dnf -y install python3 || yum -y install python3

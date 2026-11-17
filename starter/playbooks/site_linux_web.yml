@@ -1,6 +1,6 @@
 ---
 - name: Deploy Linux web with Jinja templates
-  hosts: os_linux:&role_web
+  hosts: linux:&web
   gather_facts: true
   handlers:
     - name: Reload nginx

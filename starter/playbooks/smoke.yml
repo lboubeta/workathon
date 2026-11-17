@@ -1,6 +1,6 @@
 ---
 - name: Smoke test Linux web
-  hosts: os_linux:&role_web
+  hosts: linux:&web
   gather_facts: false
   tasks:
     - name: HTTP check
@@ -20,7 +20,7 @@
         fail_msg: "welcome_message not found in response"
 
 - name: Smoke test Windows IIS
-  hosts: os_windows
+  hosts: windows
   gather_facts: false
   tasks:
     - name: Skip if deploy_windows is false

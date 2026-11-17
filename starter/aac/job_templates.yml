@@ -10,6 +10,7 @@ controller_job_templates:
     project: tN-starter
     playbook: playbooks/site_linux_web.yml
     inventory: tN-aws
+    # limit sugerido en UI: linux:&web
     execution_environment: Default execution environment
     ask_variables_on_launch: true
     extra_vars:
