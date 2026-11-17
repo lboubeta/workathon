@@ -35,6 +35,6 @@ output "credentials_hint" {
   value = {
     linux_user   = "ansible (also ec2-user)"
     windows_user = "ansible (also Administrator)"
-    password     = "(sensitive — terraform output -raw not available; use var default Ansible123!)"
+    password     = "(sensitive — terraform output -raw not available; use var default Workathon123!)"
   }
 }

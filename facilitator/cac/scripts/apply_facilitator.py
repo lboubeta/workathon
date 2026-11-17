@@ -6,7 +6,7 @@ Env:
   CONTROLLER_TOKEN  OAuth token
   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
   FACILITATOR_STARTER_URL  presigned archive URL
-  INSTANCE_PASSWORD  default Ansible123!
+  INSTANCE_PASSWORD  default Workathon123!
   VERIFY_SSL=0
 """
 
@@ -155,7 +155,7 @@ def load_vars() -> dict:
     data["project_scm_url"] = os.environ.get("FACILITATOR_STARTER_URL", "").strip().strip("'\"")
     data["aws_access_key"] = os.environ.get("AWS_ACCESS_KEY_ID", "")
     data["aws_secret_key"] = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    data["machine_password"] = os.environ.get("INSTANCE_PASSWORD", "Ansible123!")
+    data["machine_password"] = os.environ.get("INSTANCE_PASSWORD", "Workathon123!")
     data["machine_username"] = data.get("machine_username", "ansible")
     data["job_templates"] = [
         {

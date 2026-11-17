@@ -18,7 +18,7 @@
 
 - [ ] IAM mínimo para inventory + ec2 describe/tags
 - [ ] `terraform apply` en `terraform/` → 2 VMs/equipo: `tN-linux` + `tN-windows` (`Team`, `OS`, `Role=web|db`, `Env`)
-- [ ] Password lab `Ansible123!` operativa (SSH + WinRM); Windows user-data terminado
+- [ ] Password lab `Workathon123!` operativa (SSH + WinRM); Windows user-data terminado
 - [ ] Security Groups: SSH/WinRM/HTTP/RDP (lab) o restringir `allowed_cidr`
 - [ ] Cuota / límite comunicado a equipos
 - [ ] Tras el evento: `terraform destroy`

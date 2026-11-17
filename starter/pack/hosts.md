@@ -5,7 +5,7 @@
 | Campo | Valor |
 |-------|-------|
 | User SSH | `ansible` (también `ec2-user`) |
-| Auth | password `Ansible123!` (creada por Terraform user-data) |
+| Auth | password `Workathon123!` (creada por Terraform user-data) |
 | Puerto | `22` |
 | Python | `/usr/bin/python3` |
 
@@ -14,12 +14,14 @@
 | Campo | Valor |
 |-------|-------|
 | User WinRM | `ansible` (también `Administrator`) |
-| Password | `Ansible123!` |
+| Password | `Workathon123!` |
 | Puerto | `5985` (HTTP) / `5986` (HTTPS) |
 | Transport | `ntlm` |
 | Server | `http` o `https` según lab |
 
 VMs provisionadas con [`../../terraform`](../../terraform): **2 por equipo** — `tN-linux` (`OS=linux`, `Role=web`) y `tN-windows` (`OS=windows`, `Role=db`).
+
+> Password lab: no usar una que contenga `ansible` (Windows la rechaza para el usuario `ansible`).
 
 ### Variables de inventario sugeridas (Windows)
 

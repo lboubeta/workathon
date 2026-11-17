@@ -11,9 +11,11 @@ variable "teams" {
 }
 
 variable "instance_password" {
+  # Must NOT contain the substring "ansible" — Windows rejects passwords that
+  # include the username (case-insensitive) for New-LocalUser / net user.
   description = "Password for ansible/Administrator users (lab only)"
   type        = string
-  default     = "Ansible123!"
+  default     = "Workathon123!"
   sensitive   = true
 }
 

@@ -1,12 +1,33 @@
 <powershell>
 $ErrorActionPreference = "Stop"
-$PlainPassword = "${password}"
+$PlainPassword = '${password}'
 $SecurePassword = ConvertTo-SecureString $PlainPassword -AsPlainText -Force
 
-# Administrator + ansible user (! and other special chars must be quoted)
-net user Administrator "$PlainPassword"
-net user ansible "$PlainPassword" /add
-net localgroup Administrators ansible /add
+function Ensure-LocalAdminUser {
+  param(
+    [Parameter(Mandatory = $true)][string]$UserName,
+    [Parameter(Mandatory = $true)][SecureString]$Password
+  )
+
+  $existing = Get-LocalUser -Name $UserName -ErrorAction SilentlyContinue
+  if ($null -eq $existing) {
+    New-LocalUser -Name $UserName -Password $Password -FullName $UserName `
+      -Description "Workathon lab user" -AccountNeverExpires -PasswordNeverExpires | Out-Null
+  } else {
+    Set-LocalUser -Name $UserName -Password $Password -PasswordNeverExpires $true
+    Enable-LocalUser -Name $UserName
+  }
+
+  $inAdmins = Get-LocalGroupMember -Group "Administrators" -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "*\$UserName" -or $_.Name -eq $UserName }
+  if (-not $inAdmins) {
+    Add-LocalGroupMember -Group "Administrators" -Member $UserName
+  }
+}
+
+# Administrator password + ansible local admin (New-LocalUser is more reliable than net user)
+Ensure-LocalAdminUser -UserName "Administrator" -Password $SecurePassword
+Ensure-LocalAdminUser -UserName "ansible" -Password $SecurePassword
 
 # WinRM for Ansible (HTTP lab profile)
 Enable-PSRemoting -Force
@@ -21,8 +42,9 @@ netsh advfirewall firewall add rule name="WinRM-HTTPS-5986" dir=in action=allow 
 netsh advfirewall firewall add rule name="HTTP-80" dir=in action=allow protocol=TCP localport=80
 netsh advfirewall firewall add rule name="RDP-3389" dir=in action=allow protocol=TCP localport=3389
 
-# Autologon off; ensure W3SVC can be installed later by Ansible
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "LocalAccountTokenFilterPolicy" -Value 1 -Type DWord
+# Required for local admin WinRM (UAC remote token filtering)
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" `
+  -Name "LocalAccountTokenFilterPolicy" -Value 1 -Type DWord
 
 Write-Output "Workathon Windows bootstrap complete"
 </powershell>

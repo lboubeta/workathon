@@ -16,7 +16,7 @@ Tags: `Team`, `OS` (`linux`\|`windows`), `Role` (`web`\|`db`), `Env=dev` — hos
 - SG abierto (por defecto `0.0.0.0/0`) a SSH `22`, HTTP/S `80/443`, WinRM `5985/5986`, RDP `3389`
 - Usuario Linux: `ansible` (también `ec2-user`)
 - Usuario Windows: `ansible` y `Administrator`
-- Password: `Ansible123!` (variable `instance_password`)
+- Password: `Workathon123!` (variable `instance_password`)
 - Key pair EC2: útil en Linux (RSA o ED25519). Windows no acepta ED25519; el lab usa password vía user-data.
 
 > Lab only: password en claro y SG abierto. Restringe `allowed_cidr` en un entorno real.

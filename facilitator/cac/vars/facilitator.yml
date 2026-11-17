@@ -53,7 +53,7 @@ inventory_source_vars: |
 
 # Credenciales machine (lab password Terraform)
 machine_username: ansible
-machine_password: "{{ lookup('env', 'INSTANCE_PASSWORD') | default('Ansible123!', true) }}"
+machine_password: "{{ lookup('env', 'INSTANCE_PASSWORD') | default('Workathon123!', true) }}"
 
 # AWS — desde env o secrets
 aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') | default('', true) }}"
