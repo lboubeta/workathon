@@ -1,34 +1,37 @@
 ---
-# Rulebook esqueleto — webhook Gitea → Job Template CaC
-# Activar en EDA con Decision Environment del lab y credencial AAP.
+# Rulebook — webhook/Event Stream → Job Template CaC
+# En AAP EDA 2.5+: el source se sustituye por el Event Stream vía source_mappings
+# en la Activation (UI o API). El bloque ansible.eda.webhook es el placeholder.
 #
-# Ajustar: nombres de JT, filtros de repo/branch, credenciales.
+# Ajustar: nombre JT / organization / filtros repo-branch.
 
 - name: Gitea push triggers CaC apply
   hosts: all
   sources:
-    - ansible.eda.webhook:
+    - name: workathon_webhook
+      ansible.eda.webhook:
         host: 0.0.0.0
         port: 5000
-        # En AAP EDA suele usarse Event Stream; este source vale para lab/dev.
-        # Sustituir por el source del Event Stream según versión del lab.
 
   rules:
     - name: On push to starter repo apply CaC
-      condition: |
-        event.payload.ref is defined and
-        event.payload.repository.name is match(".*starter.*")
+      condition: >
+        event.payload is defined and (
+          (event.payload.ref is defined and event.payload.repository.name is match(".*starter.*"))
+          or
+          (event.payload.repository is defined and event.payload.ref is match("refs/heads/main"))
+          or
+          event.meta is defined
+        )
       action:
         run_job_template:
-          name: "tN-apply-cac"
-          organization: "tN-org"
-          # job_args / extra_vars opcionales según payload
-          # retries: 1
+          name: "facilitator-apply-cac"
+          organization: "facilitator"
 
-    # Ejemplo de filtro por path (si el payload incluye commits):
-    # - name: Only templates or group_vars changes
-    #   condition: event.payload.commits[0].modified is search("templates|group_vars")
+    # Lab teams: cambiar a tN-apply-cac / tN-org
+    # - name: Team N push
+    #   condition: event.payload.repository.name is match("tN-starter")
     #   action:
     #     run_job_template:
-    #       name: "tN-deploy-linux-web"
+    #       name: "tN-apply-cac"
     #       organization: "tN-org"
